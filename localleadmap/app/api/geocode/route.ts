@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { geocodeAddress } from '@/lib/geocodeAddress'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: NextRequest) {
   const address = req.nextUrl.searchParams.get('address')?.trim()
   if (!address) {

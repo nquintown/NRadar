@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { fetchShoppingCenters } from '@/lib/overpassMalls'
 import type { ShoppingCenter } from '@/types/pois'
 
+export const dynamic = 'force-dynamic'
+
 // In-memory cache — survives hot reloads in dev, resets on process restart
 let cache: { data: ShoppingCenter[]; timestamp: number } | null = null
 const CACHE_TTL = 3_600_000 // 1 hour
