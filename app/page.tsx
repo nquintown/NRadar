@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import type { ShoppingCenter } from '@/types/pois'
@@ -95,6 +95,7 @@ export default function HomePage() {
   const [searchName, setSearchName] = useState('')
   const [filterRegion, setFilterRegion] = useState('')
   const [filterBrand, setFilterBrand] = useState('')
+  const [visibleCount, setVisibleCount] = useState(40)
 
   useEffect(() => {
     fetch('/shopping-centers.json')
@@ -121,6 +122,13 @@ export default function HomePage() {
       return matchName && matchRegion && matchBrand
     })
   }, [centers, searchName, filterRegion, filterBrand])
+
+  // Reset pagination when filters change
+  useEffect(() => { setVisibleCount(40) }, [searchName, filterRegion, filterBrand])
+
+  const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount])
+  const hasMore = visibleCount < filtered.length
+  const loadMore = useCallback(() => setVisibleCount(n => n + 40), [])
 
   function handleSelect(center: ShoppingCenter) {
     const params = new URLSearchParams({
@@ -252,11 +260,23 @@ export default function HomePage() {
         )}
 
         {!loading && !error && filtered.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filtered.map(center => (
-              <CenterCard key={center.id} center={center} onClick={() => handleSelect(center)} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {visible.map(center => (
+                <CenterCard key={center.id} center={center} onClick={() => handleSelect(center)} />
+              ))}
+            </div>
+            {hasMore && (
+              <div className="flex justify-center mt-8">
+                <button
+                  onClick={loadMore}
+                  className="px-6 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-700 hover:border-gray-300 hover:shadow-sm transition-all"
+                >
+                  Voir plus ({filtered.length - visibleCount} restants)
+                </button>
+              </div>
+            )}
+          </>
         )}
 
         {!loading && !error && filtered.length === 0 && (
