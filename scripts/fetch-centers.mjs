@@ -138,14 +138,17 @@ async function main() {
     }
   }
 
-  if (!elements) {
+  // Guard: Overpass sometimes returns an empty elements array on server-side timeout.
+  // Never overwrite existing data with empty or suspiciously small results.
+  const MIN_EXPECTED = 200
+  if (!elements || elements.length < MIN_EXPECTED) {
     if (existsSync(OUT)) {
-      console.log('Overpass unavailable — keeping existing shopping-centers.json')
+      console.log(`Overpass returned ${elements?.length ?? 0} elements (< ${MIN_EXPECTED}) — keeping existing shopping-centers.json`)
       process.exit(0)
     }
-    console.error('Overpass unavailable and no cached file — writing empty array')
+    console.error('Overpass returned too few results and no cached file exists')
     writeFileSync(OUT, '[]')
-    process.exit(0)
+    process.exit(1)
   }
 
   const seen = new Set()
