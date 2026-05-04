@@ -24,7 +24,6 @@ function CardSkeleton() {
   )
 }
 
-// Pastel palette per brand — consistent colors to spot same-group centers at a glance
 const BRAND_COLORS: Record<string, { bg: string; text: string }> = {
   'Westfield':          { bg: 'bg-blue-100',   text: 'text-blue-700' },
   'Klépierre':          { bg: 'bg-violet-100', text: 'text-violet-700' },
@@ -59,7 +58,6 @@ function CenterCard({ center, onClick }: { center: ShoppingCenter; onClick: () =
       onClick={onClick}
       className="group card p-5 text-left hover:shadow-md hover:border-gray-300 transition-all duration-150 flex flex-col"
     >
-      {/* Top row */}
       <div className="flex items-start justify-between mb-3">
         <div className={`h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${color.bg}`}>
           <span className={`text-xs font-bold ${color.text}`}>{initials}</span>
@@ -70,23 +68,15 @@ function CenterCard({ center, onClick }: { center: ShoppingCenter; onClick: () =
           </span>
         )}
       </div>
-
-      {/* Name */}
       <p className="font-semibold text-gray-900 leading-snug line-clamp-2 mb-1 group-hover:text-gray-700 transition-colors">
         {center.name}
       </p>
-
-      {/* Location */}
       <p className="text-sm text-gray-400">
         {[center.postcode, center.city].filter(Boolean).join(' ') || 'France'}
       </p>
-
-      {/* Brand */}
       {center.detectedBrand && (
         <p className="text-xs text-gray-400 mt-1 truncate">{center.detectedBrand}</p>
       )}
-
-      {/* CTA */}
       <div className="flex items-center gap-1 text-xs font-semibold text-gray-900 mt-auto pt-4 group-hover:gap-2 transition-all">
         Explorer les commerces
         <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,11 +97,10 @@ export default function HomePage() {
   const [filterBrand, setFilterBrand] = useState('')
 
   useEffect(() => {
-    fetch('/api/shopping-centers')
+    fetch('/shopping-centers.json')
       .then(async res => {
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error ?? `Erreur ${res.status}`)
-        return data
+        if (!res.ok) throw new Error(`Erreur ${res.status}`)
+        return res.json()
       })
       .then(setCenters)
       .catch(err => setError(err.message))
@@ -169,7 +158,6 @@ export default function HomePage() {
       {/* Hero */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-screen-xl mx-auto px-5 sm:px-8 py-10">
-          {/* Top row: lottie + text */}
           <div className="flex items-center gap-10 mb-8">
             <LottiePlayer
               src="/lottie-cubes.json"
@@ -186,7 +174,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Filters below */}
           <div className="flex flex-col sm:flex-row gap-3 max-w-3xl">
             <div className="relative flex-1">
               <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none"
@@ -229,8 +216,6 @@ export default function HomePage() {
 
       {/* Content */}
       <main className="flex-1 max-w-screen-xl mx-auto w-full px-5 sm:px-8 py-8">
-
-        {/* Error */}
         {error && (
           <div className="card p-4 flex items-start gap-3 mb-6 border-red-100 bg-red-50">
             <div className="h-5 w-5 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -245,7 +230,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Stats bar */}
         {!loading && !error && (
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-baseline gap-2">
@@ -261,14 +245,12 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Loading skeletons */}
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {Array.from({ length: 20 }).map((_, i) => <CardSkeleton key={i} />)}
           </div>
         )}
 
-        {/* Grid */}
         {!loading && !error && filtered.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filtered.map(center => (
@@ -277,7 +259,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Empty state */}
         {!loading && !error && filtered.length === 0 && (
           <div className="card flex flex-col items-center py-20 gap-3 text-center">
             <div className="h-12 w-12 rounded-2xl bg-gray-100 flex items-center justify-center">
@@ -291,7 +272,6 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-gray-200 bg-white">
         <div className="max-w-screen-xl mx-auto px-5 sm:px-8 py-4 flex items-center justify-between text-xs text-gray-400">
           <span>NilsRadar</span>
