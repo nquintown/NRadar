@@ -189,7 +189,7 @@ export default function HomePage() {
 
   const abortRef = useRef<AbortController | null>(null)
 
-  const doSearch = useCallback(async (p = 1) => {
+  const doSearch = useCallback(async (p = 1, qOverride?: string) => {
     abortRef.current?.abort()
     const ctrl = new AbortController()
     abortRef.current = ctrl
@@ -199,8 +199,9 @@ export default function HomePage() {
     setSearched(true)
     if (p === 1) setEntities([])
 
+    const q = qOverride ?? query
     const params = new URLSearchParams()
-    if (query.trim()) params.set('q', query.trim())
+    if (q.trim()) params.set('q', q.trim())
     if (type !== 'all') params.set('type', type)
     if (empRange !== 'all') params.set('employeeRange', empRange)
     if (department) params.set('department', department)
@@ -436,7 +437,7 @@ export default function HomePage() {
               {['LVMH', 'Renault', 'Hôpital Cochin', 'Lycée Louis-le-Grand'].map(ex => (
                 <button
                   key={ex}
-                  onClick={() => { setQuery(ex); setTimeout(() => doSearch(1), 0) }}
+                  onClick={() => { setQuery(ex); doSearch(1, ex) }}
                   className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-gray-600 text-xs font-medium transition-colors"
                 >
                   {ex}
