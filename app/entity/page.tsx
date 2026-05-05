@@ -32,10 +32,9 @@ function RadiusRow({ r, active, onClick }: { r: RadiusResult; active: boolean; o
         active ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 hover:border-gray-300'
       }`}
     >
-      <span className={`text-2xl font-black w-12 flex-shrink-0 ${active ? 'text-white' : 'text-gray-900'}`}>
-        {r.radiusKm}
+      <span className={`text-2xl font-black w-16 flex-shrink-0 tracking-tight ${active ? 'text-white' : 'text-gray-900'}`}>
+        {r.radiusKm}<span className="text-2xl font-black">km</span>
       </span>
-      <span className={`text-xs ${active ? 'text-gray-300' : 'text-gray-400'}`}>km</span>
       <div className="flex-1">
         <div className={`text-sm font-semibold ${active ? 'text-white' : 'text-gray-700'}`}>
           {r.count} centre{r.count !== 1 ? 's' : ''}
@@ -100,16 +99,22 @@ function EntityPageInner() {
   const router = useRouter()
   const sp = useSearchParams()
 
+  const g = (k: string) => sp.get(k) || undefined
   const entity: Entity = {
     id: sp.get('siren') || 'unknown',
     type: (sp.get('type') as Entity['type']) || 'enterprise',
     name: sp.get('name') || 'Entité inconnue',
-    city: sp.get('city') || undefined,
-    nafCode: sp.get('nafCode') || undefined,
-    nafLabel: sp.get('nafLabel') || undefined,
-    employeeRangeId: (sp.get('empId') as Entity['employeeRangeId']) || undefined,
-    employeeRangeLabel: sp.get('empLabel') || undefined,
-    siren: sp.get('siren') || undefined,
+    city: g('city'),
+    address: g('address'),
+    postcode: g('postcode'),
+    nafCode: g('nafCode'),
+    nafLabel: g('nafLabel'),
+    employeeRangeId: g('empId') as Entity['employeeRangeId'],
+    employeeRangeLabel: g('empLabel'),
+    siren: g('siren'),
+    phone: g('phone'),
+    email: g('email'),
+    website: g('website'),
     lat: parseFloat(sp.get('lat') || ''),
     lon: parseFloat(sp.get('lon') || ''),
     source: 'sirene',
@@ -234,6 +239,56 @@ function EntityPageInner() {
             <div>
               <p className="text-xs text-gray-400 mb-0.5">SIREN</p>
               <p className="font-mono text-sm text-gray-500">{entity.siren}</p>
+            </div>
+          )}
+          {entity.phone && (
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">Téléphone</p>
+              <a href={`tel:${entity.phone}`} className="text-sm text-blue-600 hover:underline">{entity.phone}</a>
+            </div>
+          )}
+          {entity.email && (
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">Email</p>
+              <a href={`mailto:${entity.email}`} className="text-sm text-blue-600 hover:underline">{entity.email}</a>
+            </div>
+          )}
+          {entity.website && (
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">Site web</p>
+              <a href={entity.website.startsWith('http') ? entity.website : `https://${entity.website}`}
+                target="_blank" rel="noopener noreferrer"
+                className="text-sm text-blue-600 hover:underline block max-w-xs truncate">
+                {entity.website.replace(/^https?:\/\//, '')}
+              </a>
+            </div>
+          )}
+          {/* External enrichment links */}
+          {entity.siren && (
+            <div className="w-full border-t border-gray-100 pt-3 mt-1">
+              <p className="text-xs text-gray-400 mb-2">Enrichissement</p>
+              <div className="flex flex-wrap gap-2">
+                <a href={`https://www.pappers.fr/entreprise/${entity.name.replace(/\s+/g, '-').toLowerCase()}-${entity.siren}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="text-xs font-semibold bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-1.5 text-gray-600 transition-colors">
+                  📊 Pappers
+                </a>
+                <a href={`https://www.linkedin.com/search/results/companies/?keywords=${encodeURIComponent(entity.name)}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="text-xs font-semibold bg-blue-50 hover:bg-blue-100 rounded-lg px-3 py-1.5 text-blue-600 transition-colors">
+                  💼 LinkedIn
+                </a>
+                <a href={`https://www.societe.com/cgi-bin/search?champs=${entity.siren}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="text-xs font-semibold bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-1.5 text-gray-600 transition-colors">
+                  🔎 Societe.com
+                </a>
+                <a href={`https://annuaire-entreprises.data.gouv.fr/entreprise/${entity.siren}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="text-xs font-semibold bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-1.5 text-gray-600 transition-colors">
+                  🏛️ Annuaire public
+                </a>
+              </div>
             </div>
           )}
           <div className="sm:hidden flex gap-2 w-full">

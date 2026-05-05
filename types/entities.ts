@@ -44,6 +44,7 @@ export interface Entity {
   employeeRangeId?: EmployeeRangeId
   employeeRangeLabel?: string
   phone?: string
+  email?: string
   website?: string
   siren?: string
   source: 'sirene' | 'overpass'

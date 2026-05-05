@@ -2,9 +2,12 @@
 
 import { useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import type { Entity, EntityType, EmployeeRangeId } from '@/types/entities'
 import { ENTITY_TYPE_LABELS, EMPLOYEE_RANGES } from '@/types/entities'
 import Select from '@/components/Select'
+
+const LottiePlayer = dynamic(() => import('@/components/LottiePlayer'), { ssr: false })
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -45,17 +48,21 @@ function EntityCard({ entity, onAnalyze }: { entity: Entity; onAnalyze: () => vo
   const typeIcon = TYPE_ICONS[entity.type] ?? '🏢'
   const hasCoords = entity.lat !== undefined && entity.lon !== undefined
 
+  const fullAddress = [entity.address, entity.postcode, entity.city].filter(Boolean).join(', ')
+  const pappersUrl = entity.siren ? `https://www.pappers.fr/entreprise/${entity.name.replace(/\s+/g, '-').toLowerCase()}-${entity.siren}` : null
+  const linkedInUrl = `https://www.linkedin.com/search/results/companies/?keywords=${encodeURIComponent(entity.name)}`
+
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-5 flex flex-col gap-3 hover:border-gray-300 hover:shadow-sm transition-all">
       {/* Header row */}
       <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="text-lg leading-none">{typeIcon}</span>
-          <div>
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-lg leading-none flex-shrink-0">{typeIcon}</span>
+          <div className="min-w-0">
             <p className="font-semibold text-gray-900 text-sm leading-snug line-clamp-2">{entity.name}</p>
-            <p className="text-xs text-gray-400 mt-0.5">
-              {[entity.postcode, entity.city].filter(Boolean).join(' ') || 'Localisation inconnue'}
-            </p>
+            {entity.siren && (
+              <p className="font-mono text-[10px] text-gray-300 mt-0.5">{entity.siren}</p>
+            )}
           </div>
         </div>
         {entity.employeeRangeLabel && (
@@ -71,6 +78,57 @@ function EntityCard({ entity, onAnalyze }: { entity: Entity; onAnalyze: () => vo
           <span className="font-mono text-gray-400">{entity.nafCode}</span> · {entity.nafLabel}
         </p>
       )}
+
+      {/* Contact info */}
+      <div className="flex flex-col gap-1 text-xs text-gray-500">
+        {fullAddress && (
+          <div className="flex items-start gap-1.5">
+            <span className="mt-0.5 flex-shrink-0">📍</span>
+            <span className="line-clamp-2">{fullAddress}</span>
+          </div>
+        )}
+        {entity.phone && (
+          <a href={`tel:${entity.phone}`} className="flex items-center gap-1.5 hover:text-gray-700 transition-colors">
+            <span>📞</span>
+            <span>{entity.phone}</span>
+          </a>
+        )}
+        {entity.email && (
+          <a href={`mailto:${entity.email}`} className="flex items-center gap-1.5 hover:text-gray-700 transition-colors truncate">
+            <span>✉️</span>
+            <span className="truncate">{entity.email}</span>
+          </a>
+        )}
+        {entity.website && (
+          <a href={entity.website.startsWith('http') ? entity.website : `https://${entity.website}`}
+            target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-1.5 hover:text-gray-700 transition-colors truncate">
+            <span>🌐</span>
+            <span className="truncate">{entity.website.replace(/^https?:\/\//, '')}</span>
+          </a>
+        )}
+
+        {/* External links */}
+        <div className="flex gap-2 mt-1">
+          {pappersUrl && (
+            <a href={pappersUrl} target="_blank" rel="noopener noreferrer"
+              className="text-[10px] font-semibold bg-gray-100 hover:bg-gray-200 rounded px-2 py-0.5 transition-colors text-gray-500">
+              Pappers
+            </a>
+          )}
+          <a href={linkedInUrl} target="_blank" rel="noopener noreferrer"
+            className="text-[10px] font-semibold bg-blue-50 hover:bg-blue-100 rounded px-2 py-0.5 transition-colors text-blue-600">
+            LinkedIn
+          </a>
+          {entity.siren && (
+            <a href={`https://www.societe.com/cgi-bin/search?champs=${entity.siren}`}
+              target="_blank" rel="noopener noreferrer"
+              className="text-[10px] font-semibold bg-gray-100 hover:bg-gray-200 rounded px-2 py-0.5 transition-colors text-gray-500">
+              Societe.com
+            </a>
+          )}
+        </div>
+      </div>
 
       {/* Actions */}
       <div className="flex items-center gap-2 mt-auto pt-1">
@@ -171,11 +229,16 @@ export default function HomePage() {
       lon: String(entity.lon),
       type: entity.type,
       city: entity.city ?? '',
+      address: entity.address ?? '',
+      postcode: entity.postcode ?? '',
       siren: entity.siren ?? '',
       nafCode: entity.nafCode ?? '',
       nafLabel: entity.nafLabel ?? '',
       empLabel: entity.employeeRangeLabel ?? '',
       empId: entity.employeeRangeId ?? '',
+      phone: entity.phone ?? '',
+      email: entity.email ?? '',
+      website: entity.website ?? '',
     })
     router.push(`/entity?${params}`)
   }
@@ -201,14 +264,22 @@ export default function HomePage() {
       {/* Hero */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-screen-xl mx-auto px-5 sm:px-8 py-8">
-          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">Bassins d'activité · France</p>
-          <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mb-2">
-            Identifiez vos sources<br className="hidden sm:block" /> de flux
-          </h1>
-          <p className="text-gray-500 max-w-2xl mb-7">
-            Recherchez des entreprises, écoles, administrations ou hôpitaux, et identifiez les centres commerciaux
-            à proximité pour évaluer leur potentiel de trafic.
-          </p>
+          <div className="flex items-center gap-8 mb-6">
+            <LottiePlayer
+              src="/lottie-cubes.json"
+              className="hidden sm:block flex-shrink-0 w-32 h-32"
+            />
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">Bassins d'activité · France</p>
+              <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mb-2">
+                Identifiez vos sources<br className="hidden sm:block" /> de flux
+              </h1>
+              <p className="text-gray-500 max-w-2xl">
+                Recherchez des entreprises, écoles, administrations ou hôpitaux, et identifiez les centres commerciaux
+                à proximité pour évaluer leur potentiel de trafic.
+              </p>
+            </div>
+          </div>
 
           {/* Search bar */}
           <form onSubmit={e => { e.preventDefault(); doSearch(1) }} className="flex gap-2 max-w-2xl mb-5">
@@ -270,7 +341,7 @@ export default function HomePage() {
               value={department}
               onChange={setDept}
               options={DEPT_OPTIONS}
-              className="w-48"
+              className="w-56"
             />
           </div>
         </div>

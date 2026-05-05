@@ -77,6 +77,9 @@ function mapResult(r: any): Entity {
     nafLabel: r.libelle_activite_principale ?? undefined,
     employeeRangeId: tranche ? TRANCHE_MAP[tranche] : undefined,
     employeeRangeLabel: tranche ? TRANCHE_LABELS[tranche] : undefined,
+    phone:   siege.telephone ?? undefined,
+    email:   siege.email ?? undefined,
+    website: siege.site_web ?? r.site_web ?? undefined,
     siren: r.siren,
     source: 'sirene',
   }
