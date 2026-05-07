@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 
 const TABS = [
   { href: '/',        label: '🏢 Enseigne → Centres' },
-  { href: '/centers', label: '🛍️ Centres → Entreprises' },
+  { href: '/centers', label: '🏪 Centres → Enseignes' },
 ]
 
 export default function AppHeader() {
