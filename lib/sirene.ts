@@ -103,12 +103,16 @@ export async function searchSirene(params: {
   if (params.q?.trim()) url.searchParams.set('q', params.q.trim())
   if (params.department) url.searchParams.set('departement', params.department)
 
-  const section = params.type ? sectionsForType(params.type) : undefined
-  if (section) url.searchParams.set('section_activite_principale', section)
-
-  // For 'enterprise' type: exclude public/education/health sectors
+  // Map type → section_activite_principale
   if (params.type === 'enterprise') {
+    // Exclude public/education/health sectors
     url.searchParams.set('section_activite_principale', 'A,B,C,D,E,F,G,H,I,J,K,L,M,N')
+  } else if (params.type && params.type !== 'all') {
+    const section = sectionsForType(params.type)
+    if (section) url.searchParams.set('section_activite_principale', section)
+  } else {
+    // type === 'all': include every NAF section so SIRENE always has ≥1 filter param
+    url.searchParams.set('section_activite_principale', 'A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U')
   }
 
   if (params.employeeRangeCodes?.length) {

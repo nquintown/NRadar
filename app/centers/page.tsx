@@ -262,6 +262,7 @@ export default function CentersPage() {
               companies={allCompanies}
               selectedCompanyId={selectedCompanyId}
               onSelectCompany={id => setSelectedCompanyId(id === selectedCompanyId ? null : id)}
+              activeRadiusKm={maxRadius !== 'all' ? parseFloat(maxRadius) : undefined}
             />
           </div>
 

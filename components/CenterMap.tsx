@@ -9,16 +9,19 @@ interface Props {
   companies: EntityWithDistance[]
   selectedCompanyId: string | null
   onSelectCompany: (id: string | null) => void
+  activeRadiusKm?: number
 }
 
-export default function CenterMap({ center, companies, selectedCompanyId, onSelectCompany }: Props) {
+export default function CenterMap({ center, companies, selectedCompanyId, onSelectCompany, activeRadiusKm }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mapRef        = useRef<any>(null)
+  const mapRef          = useRef<any>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const centerMarkerRef   = useRef<any>(null)
+  const centerMarkerRef = useRef<any>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const companyLayerRef   = useRef<any>(null)
+  const companyLayerRef = useRef<any>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const radiusCircleRef = useRef<any>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
 
   // ── Init map once ────────────────────────────────────────────────────────────
@@ -81,6 +84,23 @@ export default function CenterMap({ center, companies, selectedCompanyId, onSele
       setTimeout(() => map.invalidateSize(), 50)
     })
   }, [center])
+
+  // ── Radius circle ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!mapRef.current) return
+    import('leaflet').then(L => {
+      if (radiusCircleRef.current) { radiusCircleRef.current.remove(); radiusCircleRef.current = null }
+      if (!center || !activeRadiusKm) return
+      radiusCircleRef.current = L.circle([center.lat, center.lon], {
+        radius:      activeRadiusKm * 1000,
+        color:       '#6366f1',
+        fillColor:   '#6366f1',
+        fillOpacity: 0.05,
+        weight:      1.5,
+        dashArray:   '6 4',
+      }).addTo(mapRef.current)
+    })
+  }, [center, activeRadiusKm])
 
   // ── Update company markers ───────────────────────────────────────────────────
   useEffect(() => {
