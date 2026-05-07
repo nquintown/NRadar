@@ -79,3 +79,7 @@ export interface SearchParams {
   department?: string
   page?: number
 }
+
+export interface EntityWithDistance extends Entity {
+  distanceKm: number
+}

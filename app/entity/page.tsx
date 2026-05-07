@@ -125,6 +125,7 @@ function EntityPageInner() {
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState<string | null>(null)
   const [activeRadius, setActive] = useState(10)
+  const [isMapFull, setIsMapFull] = useState(false)
 
   useEffect(() => {
     if (!entity.lat || !entity.lon || isNaN(entity.lat) || isNaN(entity.lon)) {
@@ -337,8 +338,20 @@ function EntityPageInner() {
             <div className="lg:col-span-2 flex flex-col gap-5">
               {/* Map */}
               {entity.lat && entity.lon && (
-                <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden h-80">
+                <div className={`relative ${
+                  isMapFull
+                    ? 'fixed inset-0 z-50 bg-white'
+                    : 'bg-white border border-gray-200 rounded-2xl overflow-hidden h-80'
+                }`}>
+                  <button
+                    onClick={() => setIsMapFull(f => !f)}
+                    className="absolute top-2 right-2 z-20 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-lg px-2 py-1 shadow-sm hover:bg-white text-[11px] font-semibold text-gray-600 flex items-center gap-1"
+                    title={isMapFull ? 'Réduire' : 'Agrandir la carte'}
+                  >
+                    {isMapFull ? '✕ Réduire' : '⛶ Agrandir'}
+                  </button>
                   <ProximityMap
+                    key={isMapFull ? 'full' : 'normal'}
                     lat={entity.lat}
                     lon={entity.lon}
                     entityName={entity.name}

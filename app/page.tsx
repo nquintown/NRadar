@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import type { Entity, EntityType, EmployeeRangeId } from '@/types/entities'
 import { ENTITY_TYPE_LABELS, EMPLOYEE_RANGES } from '@/types/entities'
 import Select from '@/components/Select'
+import AppHeader from '@/components/AppHeader'
 
 const LottiePlayer = dynamic(() => import('@/components/LottiePlayer'), { ssr: false })
 
@@ -14,21 +15,17 @@ const LottiePlayer = dynamic(() => import('@/components/LottiePlayer'), { ssr: f
 const TYPE_TABS: { id: EntityType | 'all'; label: string }[] = [
   { id: 'all',        label: 'Toutes' },
   { id: 'enterprise', label: 'Entreprises' },
-  { id: 'school',     label: 'Écoles' },
   { id: 'university', label: 'Universités' },
-  { id: 'government', label: 'Administrations' },
+  { id: 'government', label: 'Adm. / Militaire' },
   { id: 'hospital',   label: 'Santé' },
-  { id: 'military',   label: 'Militaires' },
 ]
 
 const TYPE_ICONS: Partial<Record<EntityType | 'all', string>> = {
   all:        '🔍',
   enterprise: '🏢',
-  school:     '🏫',
   university: '🎓',
   government: '🏛️',
   hospital:   '🏥',
-  military:   '🎖️',
 }
 
 const DEPT_OPTIONS = [
@@ -249,18 +246,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#f5f6f7] flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-screen-xl mx-auto px-5 sm:px-8 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="h-7 w-7 rounded-lg bg-gray-900 flex items-center justify-center">
-              <span className="text-white text-xs font-bold">N</span>
-            </div>
-            <span className="font-bold text-gray-900 text-sm tracking-tight">NilsRadar</span>
-          </div>
-          <span className="text-xs text-gray-400">Analyse de proximité · Centres commerciaux</span>
-        </div>
-      </header>
+      <AppHeader />
 
       {/* Hero */}
       <div className="bg-white border-b border-gray-200">
